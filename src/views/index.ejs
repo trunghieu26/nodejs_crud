@@ -29,6 +29,7 @@
           </tr>
         </thead>
         <tbody>
+          <% if(dataUser != null) { %>
             <% for(let i=0; i < dataUser.length; i++) { %>
                 <tr>
                     <td>
@@ -49,6 +50,7 @@
                     </td>
                 </tr>
             <% } %>
+          <% } %>
         </tbody>
       </table>
       <%- include('partials/footer.ejs') %>

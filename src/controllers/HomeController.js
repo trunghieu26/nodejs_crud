@@ -1,77 +1,65 @@
 import conn from '../configs/connectDb';
+import {addStudent, getListStudent, destroyStudent, getDetailStudent, updateStudent} from '../models/HomeModel';
 
-let getHomePage = (req, res) => {
-    //logic 
-    let data = [];
+let getHomePage = async (req, res) => {
+    //logic
+    getListStudent()
+        .then(result => {
+            return res.render('index.ejs', {dataUser: result})
+        })
+        .catch(err => {
+            console.log(err)
+        })
     
-    var sql = "SELECT * FROM student";
-    conn.query(sql, function(err, results) {
-        if (err) throw err;
-        data = results.map((row) => {
-            return {
-                id : row.id,
-                name : row.name,
-                email : row.email,
-                class : row.class      
-            } 
-        });
-        return res.render('index.ejs', {dataUser: (data)})
-    })
-
 }
 let getDetailPage = async (req, res) => {
 }
+
 let editStudent = async (req, res) => {
     let id = req.params.userId;
     if(req.method == 'GET') {
-        conn.query('SELECT * FROM student WHERE id = ?', [id],
-        function(error, row, fields) {
-            if (!error) {
-                return res.render('edit.ejs', {dataUser: row[0]})
-            }
-            else {
-                console.log('Error in deleting');
-            }
-        }); 
+        getDetailStudent(id)
+            .then(result => {
+                return res.render('edit.ejs', {dataUser: result})
+            })
+            .catch(err => {
+                console.log(err)
+            })
     } 
     else {
         let dataUser = req.body;
-        console.log(req);
-        conn.query(`UPDATE student SET name='${dataUser['name']}', email ='${dataUser['email']}', class ='${dataUser['class']}' WHERE id = ?`, [id],
-        function(error, row, fields) {
-            if (!error) {
+        updateStudent(dataUser,id)
+            .then(result => {
                 return res.redirect('/')
-            }
-            else {
-                console.log('Error in deleting');
-            }
-        });      
+            })
+            .catch(err => {
+                console.log(err)
+            })
+        
     }
 }
 let createStudent = async (req, res) => {
     if(req.method == 'GET') return res.render('create.ejs')
     else {
         let dataUser = req.body;
-        var sql = "INSERT INTO student (name, email, class) VALUES ?";
-        var values = [
-            [`${dataUser['name']}`, `${dataUser['email']}`, `${dataUser['class']}`],
-        ];
-        const result = await conn.query(sql, [values]);
-        return res.redirect('/')
+        addStudent(dataUser)
+            .then(result => {
+                return res.redirect('/')
+            })
+            .catch(err => {
+                console.log(err)
+            })
     } 
 }
 let deleteStudent = (req, res) => {
-    var id = req.params.userId;
-    conn.query('DELETE FROM student WHERE id = ?', [id],
-        function(error, rows, fields) {
-            if (!error) {
-                console.log('Successful deleted!! \n');
-                return  res.redirect('/')
-            }
-            else {
-                console.log('Error in deleting');
-            }
-        });
+    let id = req.params.userId;
+    destroyStudent(id)
+        .then(result => {
+            return res.redirect('/')
+        })
+        .catch(err => {
+            console.log(err)
+        })
 }
 module.exports = {
     getHomePage, getDetailPage, deleteStudent, createStudent, editStudent
